@@ -1,1 +1,2 @@
-# FDA_tutorial
+# Functional data analysis: Introduction and recent developments
+
