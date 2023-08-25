@@ -1,5 +1,5 @@
 # data import
-dta <- readRDS("data_comb.RDS")
+dta <- readRDS("data/data_comb.RDS")
 names(dta)
 
 # choose functional variable (compare functional linear model)
@@ -44,7 +44,7 @@ plot(hc)
 dev.off()
 
 pdf("hclust1_d.pdf", width = 4, height = 5)
-plot(hc, main = "", ylab = "Höhe", xlab = "Beobachtungsnummer", sub = "", cex = 0.7)
+plot(hc, main = "", ylab = "HÃ¶he", xlab = "Beobachtungsnummer", sub = "", cex = 0.7)
 dev.off()
 
 
@@ -81,7 +81,7 @@ pdf("hclust2_d.pdf", width = 4, height = 5)
 set.seed(54321)
 plot(cc + rnorm(31, sd=0.1), ya, col = cx, pch = cx, lwd = 5, xaxp = c(1,2,1),
      xlab = "Cluster", ylab = "Alter", bty = "n")
-legend("top", legend = c("Frauen","Männer"), col = c(3,1), pch = c(3,1), pt.lwd = 5)
+legend("top", legend = c("Frauen","MÃ¤nner"), col = c(3,1), pch = c(3,1), pt.lwd = 5)
 dev.off()
 
 
