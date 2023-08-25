@@ -1,5 +1,5 @@
 # data import
-dta <- readRDS("data_comb.RDS")
+dta <- readRDS("data/data_comb.RDS")
 names(dta)
 
 
@@ -55,7 +55,7 @@ dev.off()
 
 pdf("kavb_d.pdf", width = 4, height = 6)
 plot(flm1, rug = FALSE, xlab = "Relative Zeit", main = "Response: Maximales Moment", shade=FALSE,
-     ylab = "Geschätzte Koeffizientenfunktion", bty = "n", lwd = 2, col = 4)
+     ylab = "GeschÃ¤tzte Koeffizientenfunktion", bty = "n", lwd = 2, col = 4)
 abline(h = 0, lty=3)
 dev.off()
 
@@ -100,8 +100,8 @@ dev.off()
 
 pdf("haa_d.pdf", width = 4, height = 6)
 matplot(tt,t(x), type="l", lty = y+1, col = -2*y + 3, xlab = "Relative Zeit",
-        ylab = "Hüftbeschleunigung (anterior/posterior)", bty = "n", lwd = 2)
-legend("topright", legend = c("Frauen","Männer"), col = c(3,1), lty = 1:2, lwd = 2,
+        ylab = "HÃ¼ftbeschleunigung (anterior/posterior)", bty = "n", lwd = 2)
+legend("topright", legend = c("Frauen","MÃ¤nner"), col = c(3,1), lty = 1:2, lwd = 2,
        bty = "n")
 dev.off()
 
@@ -123,7 +123,7 @@ dev.off()
 
 pdf("haab_d.pdf", width = 4, height = 6)
 plot(flm2, rug = FALSE, xlab = "Relative Zeit", main = "Response: Geschlecht", shade=FALSE,
-     ylab = "Geschätzte Koeffizientenfunktion", bty = "n", lwd = 2, col = 2)
+     ylab = "GeschÃ¤tzte Koeffizientenfunktion", bty = "n", lwd = 2, col = 2)
 abline(h = 0, lty=3)
 dev.off()
 
@@ -236,7 +236,7 @@ lines(tt, t1$fit[[2]][2,], col = 3, lwd = 2)
 lines(tt, t1$fit[[2]][2,] + 2*t1$se.fit[[2]][2,], type = "l", col = 3, lty = 3)
 lines(tt, t1$fit[[2]][2,] - 2*t1$se.fit[[2]][2,], type = "l", col = 3, lty = 3)
 
-legend("topright", legend = c("Frauen","Männer"), col = c(3,1), lty = 1:2, lwd = 2,
+legend("topright", legend = c("Frauen","MÃ¤nner"), col = c(3,1), lty = 1:2, lwd = 2,
        bty = "n")
 dev.off()
 
