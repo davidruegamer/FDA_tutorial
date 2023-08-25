@@ -6,6 +6,13 @@ names(dta)
 x <- dta$knee_accl_vt[dta$cond=="slowbw",]
 x <- x/10000
 tt <- (dta$cycle-1)/100
+sx <- dta$sex[dta$cond=="slowbw"]
+
+matplot(tt,t(x), type="l", lty = 1, col = (sx == "f") + 1,
+        xlab = "percentage cycle points",
+        ylab = "knee acceleration vertical/10000", bty = "n", lwd = 2)
+
+
 
 
 # calculate euclidian distances
@@ -36,6 +43,11 @@ pdf("hclust1.pdf", width = 5, height = 6)
 plot(hc)
 dev.off()
 
+pdf("hclust1_d.pdf", width = 4, height = 5)
+plot(hc, main = "", ylab = "Höhe", xlab = "Beobachtungsnummer", sub = "", cex = 0.7)
+dev.off()
+
+
 
 # compare clusters with sex
 ys <- dta$sex[dta$cond=="slowbw"]
@@ -62,6 +74,17 @@ legend("topright", legend = c("female","male"), col = c(7,4), pch = c(7,4)+1, pt
 dev.off()
 
 
+cx <- rep(1,length(ys))
+cx[ys=="f"] <- 3
+
+pdf("hclust2_d.pdf", width = 4, height = 5)
+set.seed(54321)
+plot(cc + rnorm(31, sd=0.1), ya, col = cx, pch = cx, lwd = 5, xaxp = c(1,2,1),
+     xlab = "Cluster", ylab = "Alter", bty = "n")
+legend("top", legend = c("Frauen","Männer"), col = c(3,1), pch = c(3,1), pt.lwd = 5)
+dev.off()
+
+
 
 
 # FPCA
@@ -70,6 +93,14 @@ help("fpca.face")
 fpcax <- fpca.face(Y = x, pve = 0.95)
 fpcax$scores
 plot(fpcax$efunctions[,1], type = "l")
+
+matplot(tt,t(x), type="l", lty = 1, col = (sx == "m") + 1,
+        xlab = "percentage cycle points",
+        ylab = "knee acceleration vertical/10000", bty = "n", lwd = 2)
+lines(tt,fpcax$efunctions[,1], lwd=5, col = 4)
+
+plot(fpcax$scores[,1:2], col = (sx == "m") + 1, pch = (sx == "m") + 1,
+     lwd = 3)
 
 
 # k-means using scores
@@ -114,7 +145,7 @@ cx <- rep(3,length(cc))
 cx[cc==2] <- 1 
 plot(fpcax$scores[,1:2], col = res.uni$class, pch = cx, lwd = 5,
      xlab = "component 1", ylab = "component 2",
-     xlim = c(-6,6), ylim = c(-7,7),  bty = "n")
+     xlim = c(-7,7), ylim = c(-7,7),  bty = "n")
 
 # the point switching between clusters
 ya[fpcax$scores[,2]>4]
@@ -124,14 +155,20 @@ which(fpcax$scores[,2]>4)
 
 
 # plot for the paper 
-pdf("kmeans1.pdf", width = 5, height = 6)
-plot(fpcax$scores[,1:2], col = cx, pch = cx, lwd = 5,
+pdf("kmeans1a.pdf", width = 5, height = 6)
+#plot(fpcax$scores[,1:2], col = cx, pch = cx, lwd = 5,
+plot(fpcax$scores[,1:2], type = "n",
      xlab = "component 1", ylab = "component 2",
-     xlim = c(-6,6), ylim = c(-7,7),  bty = "n")
-points(fpcax$scores[fpcax$scores[,2]>4,1],fpcax$scores[fpcax$scores[,2]>4,2],
-       col = 4, lwd = 5, pch = 3)
-legend("bottomright", legend = c("cluster 1","cluster 2"), col = c(3,1), pch = c(3,1),
-       pt.lwd = 5, bty = "n")
+     xlim = c(-7,7), ylim = c(-7,7),  bty = "n")
+text(fpcax$scores[,1], fpcax$scores[,2], 1:length(cx), col = cx)
+#points(fpcax$scores[fpcax$scores[,2]>4,1],fpcax$scores[fpcax$scores[,2]>4,2],
+#       col = 4, lwd = 5, pch = 3)
+text(fpcax$scores[fpcax$scores[,2]>4,1],fpcax$scores[fpcax$scores[,2]>4,2],
+     "12", col = 4,)
+legend("bottomright", legend = c("cluster 1","cluster 2"),
+       fill = c(3,1),
+       #pch = c(3,1), pt.lwd = 5,
+       bty = "n")
 dev.off()
 
 
