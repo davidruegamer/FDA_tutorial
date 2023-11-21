@@ -1,156 +1,123 @@
 ### data import ###
-setwd('/Users/sgreven/Dropbox/Publications/Paper/Tutorial_FDA/Bewegungsdaten_Bernard')
-#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 dta <- readRDS(file="data_comb.RDS")
-#names(dta)
-#x <- dta$knee_accl_vt[dta$cond=="slowbw",] / 10000
 x <- dta$knee_accl_vt[dta$cond=="slowbw",] / 10000
 y <- x[1,]
 tt <- (dta$cycle-1)/100
 n <- nrow(x)
 
-### smoothing of first observation ###
-library(mgcv)
-oneobs <- gam(y ~ s(tt, k = 30))
 
-plot(oneobs, resid = TRUE, xlab= 'relative time', 
-     ylab = 'knee acceleration vertical')
-lines(tt, y - oneobs$coefficients[1], col= 2)
-
-
-library(fda)
-nbasis = 10
-basisobj = create.bspline.basis(c(0,1),nbasis)
-pdf("Bsplinebasis.pdf")
-plot(basisobj)
-dev.off()
-nbasis = 30
-basisobj = create.bspline.basis(c(0,1),nbasis)
-ys = smooth.basis(argvals=tt, y=y, fdParobj=basisobj)
-pdf("fittedcurve.pdf")
-plotfit.fd(y, tt, ys$fd, main = "")
-dev.off()
-
-### FPCA ###
-library(refund)
-myfpcs <- fpca.face(Y = x, argvals = tt, pve = 0.99, p = 3, m = 1)
-# Eigenvalues
-print('explained variance')
-round(myfpcs$evalues / sum(myfpcs$evalues),2)
-plot(myfpcs$evalues)
-# Eigenfunctions
-
-par(mfrow = c(2,2))
-mu <- apply(x, 2, mean)
-plot(tt, mu, ylim = range(mu + myfpcs$efunctions), type = "l", xlab = 'relative time', 
-     ylab = 'Mean +/- 1st Eigenfunction', main = "FPC1 (41% Variance)")
-points(tt, mu + myfpcs$efunctions[,1], pch = "+", col = 2)
-points(tt, mu - myfpcs$efunctions[,1], pch = "-", col = 2)
-plot(tt, mu, ylim = range(mu + myfpcs$efunctions), type = "l", xlab = 'relative time', 
-     ylab = 'Mean +/- 2nd Eigenfunction', main = "FPC2 (21% Variance)")
-points(tt, mu + myfpcs$efunctions[,2], pch = "+", col = 2)
-points(tt, mu - myfpcs$efunctions[,2], pch = "-", col = 2)
-plot(tt, tt, ylim = range(myfpcs$efunctions), col=0, xlab = 'relative time', 
-     ylab = 'Eigenfunctions', main = "First four Eigenfunctions")
-for (k in 1:4){
-  lines(tt, myfpcs$efunctions[,k], col = k)
-}
-#legend('bottomright', col = 1:4, lty = 1, legend = 1:4) #, title = 'Eigenfunctions')
-
-# Scores
-xi <- myfpcs$scores
-sex <- ifelse(dta$sex == 'f', 1, 2) # 1 female, 2 male
-plot(xi[,1], xi[,2], col = sex, pch = sex, xlab = 'FPC score 1', ylab = 'FPC score 2',
-     main = "First two FPC scores")
-legend('bottomright', col = 1:2, pch = 1:2, legend = c('f','m'))
-
-
-
-### Descriptives ###
+### 2.1 Descriptives ###
 library(rainbow)
 z <- t(x)
 colnames(z) <- 1:ncol(z)
 fdsdta <- fds(x = tt, y = z, xname = "tt", yname = "y")
 # rainbow plot, red high depth, yellow low depth
-pdf(file = "descriptives1.pdf")
-plot.fds(fdsdta, plot.type = "depth", colorchoice = "heat.colors", 
-         xlab= 'relative time', 
-         ylab = 'knee acceleration vertical')
+pdf(file = "descriptives1.pdf", width = 5, height = 6)
+plot.fds(fdsdta, plot.type = "depth", colorchoice = "heat_hcl", lwd = 2, bty = "n",
+         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000') 
 dev.off()
-pdf(file = "descriptives2.pdf")
+pdf(file = "descriptives2.pdf", width = 5, height = 6)
 # functional boxplot
-fboxplot(fdsdta,  plot.type = "functional", legendpos = "bottomright",
-         xlab= 'relative time', 
-         ylab = 'knee acceleration vertical')
+par(bty = "n")
+fboxplot(fdsdta,  plot.type = "functional", legendpos = "bottomright", lwd = 2, 
+         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000')
 dev.off()
 
-par(mfrow = c(1,1))
 
-### Phase and Amplitude Variation ###
+### 2.2 smoothing of first observation ###
 library(fda)
+nbasis = 10
+basisobj = create.bspline.basis(c(0,1),nbasis)
+pdf("Bsplinebasis.pdf", width = 5, height = 6)
+  plot(basisobj, lwd = 2, bty = "n", xlab = "relative time", ylab = "B-spline basis")
+dev.off()
 nbasis = 30
 basisobj = create.bspline.basis(c(0,1),nbasis)
-ys = smooth.basis(argvals=tt, y=t(x), fdParobj=basisobj)
-plot(ys)
+ys = smooth.basis(argvals=tt, y=y, fdParobj=basisobj)
+pdf("fittedcurve.pdf", width = 5, height = 6)
+  plotfit.fd(y, tt, ys$fd, main = "", lwd = 2, bty = "n", xlab = "relative time", ylab = "reconstruction of knee axial rotation acceleration / 10000") 
+dev.off()
 
-yfd <- as.fd(ys)
+
+### 2.3 Phase and Amplitude Variation ###
+library(fdasrvf)
+library(rainbow)
+alignedknee <- time_warping(f = t(x), time = tt)
+
+pdf(file = "unaligned.pdf", width = 5, height = 6)
+  fdsdta <- fds(x = tt, y = alignedknee$f0, xname = "tt", yname = "y")
+  plot.fds(fdsdta, plot.type = "functions", cex=1.5, cex.lab = 1.5, lwd = 2, bty = "n", #colorchoice = "heat_hcl",
+         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000')
+  unalignedmean <- apply(alignedknee$f0, 1, mean)
+  lines(tt, unalignedmean, lwd =6, lty = 1)
+dev.off()
+pdf(file = "aligned.pdf", width = 5, height = 6)
+  fdsdta <- fds(x = tt, y = alignedknee$fn, xname = "tt", yname = "y")
+  plot.fds(fdsdta, plot.type = "functions", cex=1.5, cex.lab = 1.5, lwd = 2, bty = "n",
+         xlab= 'aligned time', ylab = 'knee axial rotation acceleration / 10000')
+  lines(tt, alignedknee$fmean, lwd =6, lty = 1)
+dev.off()
+pdf(file = "warping.pdf", width = 5, height = 6)
+  fdsdta <- fds(x = tt, y = alignedknee$warping_functions, xname = "tt", yname = "y")
+  plot.fds(fdsdta, plot.type = "functions", cex=1.5, cex.lab = 1.5, lwd = 2, bty = "n",
+         xlab = 'aligned time', ylab= 'relative time')
+  lines(tt, tt, lwd =6, lty = 1)
+dev.off()
 
 
-Wnbasis   <- 6
-Wbasis    <- create.bspline.basis(c(0,1), Wnbasis)
-Wfd0      <- fd(matrix(0,Wnbasis,1),Wbasis)
-WfdParobj <- fdPar(Wfd0, Lfdobj=2, lambda=0.01)
+### 2.4 FPCA ###
+library(refund)
+myfpcs <- fpca.face(Y = x, pve = 0.99, p = 3, m = 1) #,  argvals = tt
 
-# smooth alignment
-yalign <- register.fd(yfd, crit = 2, WfdParobj=WfdParobj)
-#plotreg.fd(yalign)
-plot(yfd)
-plot(yalign$regfd)
-plot(yalign$warpfd)
+# Eigenfunctions
+phi <- myfpcs$efunctions
+L <- length(myfpcs$evalues) 
+phi <- phi * sqrt(L) # make eigenfunctions orthonormal w.r.t. the L2 and not vector inner product
+# Eigenfunctions orthonormal? yes, matrix of inner products yields identity matrix
+round(t(phi) %*% phi / L,6)
 
-#landmark registration
-diff <- function(x){
-  mylen <- length(x)
-  x[2:mylen] - x[1:(mylen-1)]
+# Eigenvalues
+print('explained variance')
+nu <- myfpcs$evalues / L # rescale eigenvalues/variances according to rescaling of eigenfunctions
+myfracs <- round(nu / sum(nu),2) * 100
+plot(nu)
+
+pdf("FPCA.pdf")
+par(mfrow = c(2,2))
+mu <- apply(x, 2, mean)
+mylims <- range(cbind(mu + sqrt(nu[1]) * phi[,1], mu + sqrt(nu[2]) * phi[,2]))
+plot(tt, mu, ylim = mylims, type = "l", xlab = 'relative time', 
+     ylab = 'Mean +/- multiple of 1st Eigenfunction', main = "FPC1 (41% Variance)", lwd = 2, bty = "n") 
+points(tt, mu + sqrt(nu[1]) * phi[,1], pch = "+", col = 2)
+points(tt, mu - sqrt(nu[1]) * phi[,1], pch = "-", col = 2)
+plot(tt, mu, ylim = mylims, type = "l", xlab = 'relative time', 
+     ylab = 'Mean +/- multiple of 2nd Eigenfunction', main = "FPC2 (21% Variance)", lwd = 2, bty = "n") 
+points(tt, mu + sqrt(nu[2]) * phi[,2], pch = "+", col = 2)
+points(tt, mu - sqrt(nu[2]) * phi[,2], pch = "-", col = 2)
+plot(tt, tt, ylim = c(-3, max(phi[,1:2])), col=0, xlab = 'relative time', 
+     ylab = 'Eigenfunctions', main = "First four Eigenfunctions", bty = "n") 
+for (k in 1:4){
+  lines(tt, phi[,k], col = k)
 }
+abline(h=0, lty = 2)
+legend('bottomright', col = 1:4, lty = 1, 
+       legend = paste(myfracs[1:4], "%"), ncol = 2, bty = "n", 
+       title = 'Eigenfunctions (%Var.)') 
 
-plot(x[1,])
-plot(diff(x[1,]))
+# Scores
+sex <- ifelse(dta$sex == 'f', 1, 2) # 1 female, 2 male
+xi <- myfpcs$scores / sqrt(L) # rescale scores according to rescaling of eigenfunctions
+plot(xi[,1], xi[,2], col = sex, pch = sex, xlab = 'FPC score 1', 
+     ylab = 'FPC score 2', #ylim = c(-6,7), 
+     main = "First two FPC scores", bty = "n")
+legend('topright', col = 1:2, pch = 1:2, legend = c('female','male')) 
+dev.off()
 
-landm <- function(x){
-  mylen <- length(x)
-  minmax <- c()
-  for (k in 3:(mylen-2)){
-    if (x[k] > x[k-1] && x[k-1] > x[k-2] && x[k] > x[k+1] && x[k+1] > x[k+2]){
-      minmax <- c(minmax, tt[k])
-    }
-    if (x[k] < x[k-1] && x[k-1] < x[k-2] && x[k] < x[k+1] && x[k+1] < x[k+2]){
-      minmax <- c(minmax, tt[k])
-    }
-  }
-  if (minmax[1] > 0.12){
-    minmax <- c(0.01,minmax)
-  }
-  if (max(minmax) < 0.82){
-    minmax <- c(minmax,0.99)
-  }
-  return(minmax)
-}
-
-myind <- c(1:2, 5, 7:11, 13:14, 17:18, 20, 22:30)
-myx <- x[myind,]
-ximarks <- t(apply(myx,1,landm))
-x0marks <- apply(ximarks,2,mean)
-nbasis = 30
-basisobj = create.bspline.basis(c(0,1),nbasis)
-ys = smooth.basis(argvals=tt, y=t(myx), fdParobj=basisobj)
-plot(ys)
-yfd <- as.fd(ys)
-
-
-lmkreg <- landmarkreg(yfd, ximarks, x0marks)
-
-
-
-
-
+# check that fitted functions with 10 FPCs closely match the observed ones
+par(mfrow = c(1,2))
+myfit <- mu + phi %*% t(xi)
+fdsdta2 <- fds(x = tt, y = myfit, xname = "tt", yname = "y")
+plot.fds(fdsdta2, plot.type = "functions", colorchoice = "heat_hcl", lwd = 2, bty = "n",
+         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5)) 
+plot.fds(fdsdta, plot.type = "functions", colorchoice = "heat_hcl", lwd = 2, bty = "n",
+         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5)) 
