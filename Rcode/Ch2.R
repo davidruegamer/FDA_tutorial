@@ -4,7 +4,7 @@ x <- dta$knee_accl_vt[dta$cond=="slowbw",] / 10000
 y <- x[1,]
 tt <- (dta$cycle-1)/100
 n <- nrow(x)
-
+L <- length(tt) 
 
 ### 2.1 Descriptives ###
 library(rainbow)
@@ -71,7 +71,6 @@ myfpcs <- fpca.face(Y = x, pve = 0.99, p = 3, m = 1) #,  argvals = tt
 
 # Eigenfunctions
 phi <- myfpcs$efunctions
-L <- length(myfpcs$evalues) 
 phi <- phi * sqrt(L) # make eigenfunctions orthonormal w.r.t. the L2 and not vector inner product
 # Eigenfunctions orthonormal? yes, matrix of inner products yields identity matrix
 round(t(phi) %*% phi / L,6)
@@ -121,3 +120,4 @@ plot.fds(fdsdta2, plot.type = "functions", colorchoice = "heat_hcl", lwd = 2, bt
          xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5)) 
 plot.fds(fdsdta, plot.type = "functions", colorchoice = "heat_hcl", lwd = 2, bty = "n",
          xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5)) 
+
