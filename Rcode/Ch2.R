@@ -1,4 +1,5 @@
 ### data import ###
+#setwd('/Users/sgreven/Dropbox/Publications/Paper/Tutorial_FDA/Bewegungsdaten_Bernard')
 dta <- readRDS(file="data_comb.RDS")
 x <- dta$knee_accl_vt[dta$cond=="slowbw",] / 10000
 y <- x[1,]
