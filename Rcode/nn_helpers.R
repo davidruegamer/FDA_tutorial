@@ -109,7 +109,7 @@ conv_fitting <- function(
       layer_dropout(rate = 0.5) %>%
       layer_dense(101)
   },
-  epochs = 200,
+  epochs = 250,
   batch_size = 16,
   callbacks = list(
     # callback_early_stopping(patience = 25, restore_best_weights = TRUE),

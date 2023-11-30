@@ -4,12 +4,10 @@ gc()
 # Load packages --------------------------------------------------------------
 library(refund) # functional regression models for comparison
 library(FuncNN) # neural networks with functional input
+# load newest version from Github:
+# https://github.com/gpfda/GPFDA-dev/issues/2#issuecomment-1484055581
 library(GPFDA) # GPs for FDA
 library(FDboost) # Boosting functional regression
-# Combining NNs and structured regression
-# devtools::load_all("~/NSL/deepregression")
-# devtools::load_all("~/NSL/funnel")
-# devtools::install_github("xiaotiand/FunFor")
 library(FunFor) # functional random forest
 library(xgboost) # for implicit ML approach
 source("Rcode/nn_helpers.R") # neural networks
@@ -132,17 +130,24 @@ rm(fit_cnn, prediction_cnn); gc()
 # package does not work with the additional array class for matrices
 xtf <- lapply(x_train_fun, function(x){ class(x) <- "matrix"; return(x)})
 
-
 fit_gp <- gpfr(response = y_train, 
-           time = 1:101, 
-           uReg = x_train_sca[,21:25],
-           fxReg = ,
-           gpReg = 1:101,
-           # fyList = list(nbasis = 15, lambda = 0.0001),
-           # uCoefList = list(list(lambda = 0.0001, nbasi = 15)),
-           Cov = 'pow.ex', gamma = 1, fitting = T)
+               time = 1:101, 
+               uReg = x_train_sca[,22:25],
+               fxReg = x_train_fun,
+               gpReg = matrix(rep(1:101, nrow(y_train)), ncol=101),
+               fyList = list(nbasis = 15, lambda = 0.0001),
+               fxList = list(list(nbasis = 15, lambda = 0.0001))[rep(1,5)],
+               uCoefList = list(list(nbasi = 6, lambda = 0.0001)),
+               Cov = 'pow.ex', gamma = 1, fitting = T)
 
-prediction_gp <- blub
+prediction_gp <- predict(object=fit_gp, 
+                         fxReg = x_test_fun, 
+                         testInputGP = matrix(rep(1:101, nrow(y_test)), ncol=101),
+                         testTime = 1:101,
+                         uReg = x_test_sca[,22:25], 
+                         gpReg = NULL
+)
+
 
 saveRDS(prediction_gp, file="results/prediction_gp.RDS")
 
@@ -320,15 +325,47 @@ rmseDF <- data.frame(rmse = paste0("RMSE: ", round(
   sapply(2:length(results), function(i) mean(sqrt(apply((results[[i]]-results[[1]])^2, 1, sum)))), 4)),
                      what = nams[-1], obs = 1)
 
-ggplot(resultsDF, #%>% filter(obs %in% sample(1:nrow(y_test), 9)), 
+meth_lab <- c("CNN", "FDboost", "FuncNN", "FunFor", "ImageNet", "Intercept", "pffr")
+
+rmseDF$what <- factor(rmseDF$what, levels = unique(rmseDF$what),
+                      labels = meth_lab)
+resultsDF$what <- factor(resultsDF$what, levels = unique(resultsDF$what),
+                         labels = c("Truth", meth_lab))
+
+ggplot(resultsDF %>% filter(!what %in% c("Intercept", "FunFor")), 
        aes(x = time, colour = what, y = value, group=obs)) + 
-  geom_path() + theme_bw() + facet_wrap(~what) + ylim(-1.3,1.3) + 
+  geom_path(alpha=0.25) + theme_bw() + facet_wrap(~what) + ylim(-1.3,1.3) + 
   guides(colour = "none") + geom_text(
-    data    = rmseDF,
+    data    = rmseDF %>% filter(!what %in% c("Intercept", "FunFor")),
     colour = "black",
     mapping = aes(x = -Inf, y = -Inf, label = rmse),
     hjust   = -0.1,
     vjust   = -1
   )
 
-ggsave(filename = "ml_comparison.pdf", width=7, height=5)
+# ggsave(filename = "ml_comparison.pdf", width=7, height=5)
+
+# Filter the results
+filtered_results <- subset(resultsDF, !what %in% c("Intercept", "FunFor"))
+filtered_rmse <- subset(rmseDF, !what %in% c("Intercept", "FunFor"))
+
+# Plotting each method in a separate plot
+palette <- RColorBrewer::brewer.pal(8, "Dark2")
+palette <- col2rgb(palette)
+palette <- rgb(palette[1,] / 255, palette[2,] / 255, palette[3,] / 255, alpha = 0.25)
+
+pdf("ml_comparison.pdf", width = 10, height = 6)
+par(mfrow = c(2,3), cex=0.8)
+for (method in unique(filtered_results$what)) {
+  single_result <- subset(filtered_results, what == method)
+  matplot(t(matrix(single_result$value, ncol=101)), 
+          x = seq(0,1,l=101), 
+          col = palette[as.integer(single_result$what)], 
+          type = 'l', ylim = c(-1.1,1.1), 
+       xlab = 'relative time', ylab = 'value', main = method, bty = "n")
+  
+  single_rmse <- subset(filtered_rmse, what == method)
+  if(method!="Truth") text(x = min(single_result$time), y = -0.82, 
+       labels = single_rmse$rmse, pos = 4)
+}
+dev.off()
