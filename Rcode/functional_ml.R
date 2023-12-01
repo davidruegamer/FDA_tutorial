@@ -365,7 +365,7 @@ for (method in unique(filtered_results$what)) {
        xlab = 'relative time', ylab = 'value', main = method, bty = "n")
   
   single_rmse <- subset(filtered_rmse, what == method)
-  if(method!="Truth") text(x = min(single_result$time), y = -0.82, 
+  if(method!="Truth") text(x = min(single_result$time)/101, y = -0.82, 
        labels = single_rmse$rmse, pos = 4)
 }
 dev.off()
