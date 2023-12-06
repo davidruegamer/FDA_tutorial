@@ -1,5 +1,5 @@
 # data import
-dta <- readRDS("data_comb.RDS")
+dta <- readRDS("data/data_comb.RDS")
 
 # data for functional ANOVA
 x_ankle <- dta[9:20]
