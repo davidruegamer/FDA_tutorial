@@ -1,5 +1,5 @@
 # data import
-dta <- readRDS("data_comb.RDS")
+dta <- readRDS("data/data_comb.RDS")
 names(dta)
 
 # R functions needed
