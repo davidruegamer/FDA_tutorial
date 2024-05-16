@@ -127,9 +127,10 @@ legend('topright', col = 1:2, pch = 1:2, legend = c('female','male'))
 
 # check that fitted functions with 10 FPCs closely match the observed ones
 par(mfrow = c(1,2))
+fdsdta <- fds(x = tt, y = z, xname = "tt", yname = "y")
 myfit <- mu + phi %*% t(xi)
 fdsdta2 <- fds(x = tt, y = myfit, xname = "tt", yname = "y")
 plot.fds(fdsdta2, plot.type = "functions", colorchoice = "heat_hcl", lwd = 2, bty = "n",
          xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5)) 
 plot.fds(fdsdta, plot.type = "functions", colorchoice = "heat_hcl", lwd = 2, bty = "n",
-         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5)) 
+         xlab= 'relative time', ylab = 'knee axial rotation acceleration / 10000', ylim = c(-2.5,2.5))  
