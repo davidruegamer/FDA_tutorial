@@ -32,7 +32,7 @@ fboxplot(fdsdta,  plot.type = "functional", legendpos = "bottomright", lwd = 2,
 
 
 
-### 2.2 Smoohting of functional data ###
+### 2.2 Smoothing of functional data ###
 
 # Smoothing of first observation
 library(fda)
