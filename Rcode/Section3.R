@@ -180,7 +180,7 @@ for (i in 1:n)
 {
   y_i <- y[-i]
   x_i <- x[-i,]
-  flmi <- pfr(y_i ~ lf(x_i, k = 20, bs = "ps", m = 2), method = "ML")
+  flmi <- pfr(y_i ~ lf(x_i, k = 15, bs = "ps", m = 2), method = "REML")
   preds_pfr[i] <- predict(flmi, newdata = list("x_i" = matrix(x[i,],1,101)))
 }
 
@@ -228,8 +228,8 @@ for (i in 1:n)
 {
   y_i <- y[-i]
   x_i <- x[-i,]
-  flmi <- pfr(y_i ~ lf(x_i, k = 20, bs = "ps", m = 2), family = binomial(link = logit),
-              method = "ML")
+  flmi <- pfr(y_i ~ lf(x_i, k = 15, bs = "ps", m = 2), family = binomial(link = logit),
+              method = "REML")
   preds_pfr[i] <- predict(flmi, newdata = list("x_i" = matrix(x[i,],1,101)),
                           type = "response")
 }
