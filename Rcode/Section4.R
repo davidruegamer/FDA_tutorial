@@ -104,6 +104,10 @@ abline(h=c(0.05,0.1), lty=2:3)
 
 ### DO NOT RUN: Supplementary Material ###
 
+# This part contains an additional simulation study
+# that illustrates some statements made in Section 4.1
+# of our paper
+
 # check TRP
 R <- 100
 pvalsTRP_anova <- numeric(R)
