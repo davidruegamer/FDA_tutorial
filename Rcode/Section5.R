@@ -40,7 +40,6 @@ cc <- cutree(hc, k=2)
 # compare clusters with sex
 ys <- dta$sex[dta$cond=="slowbw"]
 tyc <- table(ys,cc)
-tyw <- table(ys,cw)
 barplot(tyc, col = c(7,4), xlab = "cluster", ylab = "frequency")
 legend("topright", legend = c("female","male"), fill = c(7,4))
 chisq.test(tyc)
