@@ -1,6 +1,9 @@
 ### Section 6: Machine Learning Approaches ###
 
 # library import
+library(deepregression) # helps with installing TensorFlow
+# trigger loading and possible start-up errors
+suppressMessages(try(invisible(tf$cos(0)), silent = TRUE))
 library(refund) # functional regression models for comparison
 library(FuncNN) # neural networks with functional input
 library(FDboost) # Boosting functional regression
@@ -8,10 +11,13 @@ library(tidyverse) # data wrangling
 library(ggplot2) # plotting
 source("Rcode/nn_helpers.R") # neural networks
 
+# create folder
+if(!dir.exists("results"))
+  dir.create("results")
+
 # data import
 dta <- readRDS("data/data_comb.RDS")
 names(dta)
-
 
 ### 6.4 Comparison ###
 
@@ -91,6 +97,8 @@ prediction_funcNN = fnn.predict(fit_funcNN,
                                 domain_range = list(c(1, 101)),
                                 raw_data = TRUE)
 
+saveRDS(prediction_funcNN, file="results/prediction_FuncNN.RDS")
+
 rm(fit_funcNN, prediction_funcNN); gc()
 
 ################ Pre-trained Deep Network ##################
@@ -104,6 +112,8 @@ fit_imagenet <- pretrained_fitting(
 
 prediction_imagenet <- fit_imagenet %>% predict(x_test_fun_array)
 
+saveRDS(prediction_imagenet, file="results/prediction_ImageNet.RDS")
+
 rm(fit_imagenet, prediction_imagenet); gc()
 
 ################ Convolutional Neural Network ##################
@@ -116,6 +126,8 @@ fit_cnn <- conv_fitting(
 )
 
 prediction_cnn <- fit_cnn %>% predict(x_test_fun_array)
+
+saveRDS(prediction_cnn, file="results/prediction_CNN.RDS")
 
 rm(fit_cnn, prediction_cnn); gc()
 
@@ -155,6 +167,8 @@ m <- pffr(as.formula(form),
           data = train)
 
 prediction_pffr <- m %>% predict(test)
+
+saveRDS(prediction_pffr, file="results/prediction_pffr.RDS")
 
 rm(m, prediction_pffr); gc()
 
@@ -196,6 +210,8 @@ m[mstop(m)]
 
 prediction_fdboost <- m %>% predict(test)
 
+saveRDS(prediction_fdboost, file="results/prediction_FDboost.RDS")
+
 rm(m, prediction_fdboost); gc()
 
 ################ Functional Intercept ####################
@@ -211,7 +227,7 @@ mint <- pffr(as.formula(form),
              algorithm = "bam",
              data = train)
 
-prediction_intercept <- mint %>% predict(test)
+prediction_intercept <- mint %>% predict(test[c("id")])
 
 saveRDS(prediction_intercept, file="results/prediction_intercept.RDS")
 
@@ -253,6 +269,7 @@ palette <- RColorBrewer::brewer.pal(8, "Dark2")
 palette <- col2rgb(palette)
 palette <- rgb(palette[1,] / 255, palette[2,] / 255, palette[3,] / 255, alpha = 0.25)
 
+# Figure 13
 
 par(mfrow = c(2,3), cex=0.8)
 for (method in unique(filtered_results$what)) {
