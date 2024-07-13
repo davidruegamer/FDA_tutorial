@@ -1,9 +1,12 @@
 ### Section 6: Machine Learning Approaches ###
 
+# The following code is only reproducible using
+# TensorFlow >= 2.10 and Keras >= 2.10, but Keras < 3.
+# Due to the lack in support of earlier versions of 
+# these packages on Windows, the code might further
+# only be executable on Linux-based systems.
+
 # library import
-library(deepregression) # helps with installing TensorFlow
-# trigger loading and possible start-up errors
-suppressMessages(try(invisible(tf$cos(0)), silent = TRUE))
 library(refund) # functional regression models for comparison
 library(FuncNN) # neural networks with functional input
 library(FDboost) # Boosting functional regression
